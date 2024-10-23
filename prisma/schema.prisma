@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  uid String @id @default(uuid())
+  first_name String
+  last_name String
+  email String @unique
+  phone String @unique
+  created_at DateTime @default(now())
+  modified_at DateTime?
+  status String
+  profile_url String?
+  company_id String?
+  businesses Customer_Business[] // a customer can have multiple businesses
+}
+
+model Business {
+  uid String @id @default(uuid())
+  parent_uid String?
+  name String
+  email String
+  phone String
+  location String
+  lat Float
+  lng Float
+  company_id String?
+  status String
+  created_at DateTime @default(now())
+  modified_at DateTime?
+  profile_url String?
+  description String?
+  website String?
+  kra_pin String?
+  customers Customer_Business[] // a business can have multiple customers
+  modified_by String?
+
+  @@index([parent_uid])  //index for faster querying by parent_uid
+}
+
+model Customer_Business {
+  uid String @id @default(uuid())
+  customer_uid String  // Foreign key to Customers.uid
+  business_uid String  // Foreign key to Businesses.uid
+  created_at DateTime @default(now())
+  modified_at DateTime?
+  customer     Customer @relation(fields: [customer_uid], references: [uid], onDelete: Cascade)
+  business     Business @relation(fields: [business_uid], references: [uid], onDelete: Cascade)  
+}
